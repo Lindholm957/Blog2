@@ -1,16 +1,25 @@
-FROM node:6.7.0
-RUN npm install -g yarn
-
 FROM ruby:2.7.0
 
-RUN apt-get update -qq && apt-get install -y build-essential libpq-dev nodejs
+RUN apt-get update && apt-get install apt-transport-https
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
+RUN apt-get update -qq && apt-get install -y nodejs yarn
 RUN mkdir /Blog2
+
 WORKDIR /Blog2
-
-ADD Gemfile /Blog2/Gemfile
-ADD Gemfile.lock /Blog2/Gemfile.lock
-
+COPY Gemfile /Blog2/Gemfile
+COPY Gemfile.lock /Blog2/Gemfile.lock
 RUN bundle install
 
-ADD . /Blog2
+COPY . /Blog2
+RUN rm -Rf node_modules/
+RUN rm yarn.lock
+RUN yarn install --check-files
+
+ENV RAILS_ENV=development
+EXPOSE 3000
+
+# Start the main process.
+CMD ["rails", "server", "-b", "0.0.0.0"]
