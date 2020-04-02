@@ -14,8 +14,6 @@ COPY Gemfile.lock /Blog2/Gemfile.lock
 RUN bundle install
 
 COPY . /Blog2
-RUN rm -Rf node_modules/
-RUN rm yarn.lock
 RUN yarn install --check-files
 
 ENV RAILS_ENV=development
